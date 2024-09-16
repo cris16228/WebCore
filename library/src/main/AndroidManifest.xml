@@ -5,7 +5,6 @@
     <application
         android:allowBackup="false"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Library"
         android:usesCleartextTraffic="true">
         <provider
             android:name="androidx.core.content.FileProvider"
