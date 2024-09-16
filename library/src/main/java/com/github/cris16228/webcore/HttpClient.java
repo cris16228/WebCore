@@ -44,24 +44,45 @@ public class HttpClient {
             throw new RuntimeException(e);
         }
         try {
-            HttpURLConnection connection = (HttpURLConnection) _url.openConnection();
-            connection.setRequestMethod(method);
+            AsyncUtil web = new AsyncUtil();
+            Document document = web.execute(new AsyncUtil.onExecuteListener<Document>() {
+                @Override
+                public void preExecute() {
 
-            for (Map.Entry<String, String> header : headers.entrySet()) {
-                connection.setRequestProperty(header.getKey(), header.getValue());
-            }
-            int responseCode = connection.getResponseCode();
+                }
 
-            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            StringBuilder response = new StringBuilder();
-            String inputLine;
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
-            }
-            in.close();
+                @Override
+                public Document doInBackground() {
+                    try {
+                        HttpURLConnection connection = (HttpURLConnection) _url.openConnection();
+                        connection.setRequestMethod(method);
 
-            return new Document(responseCode, connection.getHeaderFields(), response.toString());
-        } catch (IOException e) {
+                        for (Map.Entry<String, String> header : headers.entrySet()) {
+                            connection.setRequestProperty(header.getKey(), header.getValue());
+                        }
+                        int responseCode = connection.getResponseCode();
+
+                        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                        StringBuilder response = new StringBuilder();
+                        String inputLine;
+                        while ((inputLine = in.readLine()) != null) {
+                            response.append(inputLine);
+                        }
+                        in.close();
+                        return new Document(responseCode, connection.getHeaderFields(), response.toString());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    return null;
+                }
+
+                @Override
+                public void postDelayed() {
+
+                }
+            });
+            return document;
+        } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
