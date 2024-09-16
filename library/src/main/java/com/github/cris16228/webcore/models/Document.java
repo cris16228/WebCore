@@ -13,12 +13,21 @@ public class Document {
     private final Map<String, List<String>> headers;
     private final String body;
     private final URL url;
+    private final String ID_REGEX_PART_1 = "<([a-zA-Z0-9]+)[^>]*\\bid=['\"]";
+    private final String ID_REGEX_PART_2 = "['\"][^>]*>(.*?)</\\1>";
+    private final String CLASS_REGEX_PART_1 = "<([a-zA-Z0-9]+)([^>]*\\sclass=['\"]([^'\"]*\\s)?";
+    private final String CLASS_REGEX_PART_2 = "(\\s[^'\"]*)?['\"][^>]*)>(.*?)</\\1>";
+    private final String ID_CLASS_REGEX_PART_1 = "<([a-zA-Z0-9]+)\\b[^>]*\\bid=['\"]";
+    private final String ID_CLASS_REGEX_PART_2 = "['\"][^>]*\\bclass=['\"][^'\"]*";
+    private final String ID_CLASS_REGEX_PART_3 = "[^'\"]*['\"][^>]*>(.*?)</\\1>";
+    private final List<String> history;
 
-    public Document(int statusCode, Map<String, List<String>> headers, String body, URL url) {
+    public Document(int statusCode, Map<String, List<String>> headers, String body, URL url, List<String> history) {
         this.statusCode = statusCode;
         this.headers = headers;
         this.body = body;
         this.url = url;
+        this.history = history;
     }
 
     public URL getUrl() {
@@ -58,8 +67,7 @@ public class Document {
     }
 
     public Element getElementById(String id) {
-        String regex = "<([a-zA-Z0-9]+)([^>]*\\sid=['\"]" + id + "['\"][^>]*)>(.*?)</\\1>";
-        Pattern pattern = Pattern.compile(regex, Pattern.DOTALL);
+        Pattern pattern = Pattern.compile(ID_REGEX_PART_1 + id + ID_REGEX_PART_2, Pattern.DOTALL);
         Matcher matcher = pattern.matcher(body);
         if (matcher.find()) {
             return new Element(matcher.group(0));
@@ -69,8 +77,7 @@ public class Document {
 
     public List<Element> getElementsById(String id) {
         List<Element> elements = new ArrayList<>();
-        String regex = "<([a-zA-Z0-9]+)([^>]*\\sid=['\"]" + id + "['\"][^>]*)>(.*?)</\\1>";
-        Pattern pattern = Pattern.compile(regex, Pattern.DOTALL);
+        Pattern pattern = Pattern.compile(ID_REGEX_PART_1 + id + ID_REGEX_PART_2, Pattern.DOTALL);
         Matcher matcher = pattern.matcher(body);
         while (matcher.find()) {
             elements.add(new Element(matcher.group(0)));
@@ -79,8 +86,7 @@ public class Document {
     }
 
     public Element getElementByClass(String className) {
-        String regex = "<([a-zA-Z0-9]+)([^>]*\\sclass=['\"]([^'\"]*\\s)?" + className + "(\\s[^'\"]*)?['\"][^>]*)>(.*?)</\\1>";
-        Pattern pattern = Pattern.compile(regex, Pattern.DOTALL);
+        Pattern pattern = Pattern.compile(CLASS_REGEX_PART_1 + className + CLASS_REGEX_PART_2, Pattern.DOTALL);
         Matcher matcher = pattern.matcher(body);
         if (matcher.find()) {
             return new Element(matcher.group(0));
@@ -90,8 +96,7 @@ public class Document {
 
     public List<Element> getElementsByClass(String className) {
         List<Element> elements = new ArrayList<>();
-        String regex = "<([a-zA-Z0-9]+)([^>]*\\sclass=['\"]([^'\"]*\\s)?" + className + "(\\s[^'\"]*)?['\"][^>]*)>(.*?)</\\1>";
-        Pattern pattern = Pattern.compile(regex, Pattern.DOTALL);
+        Pattern pattern = Pattern.compile(CLASS_REGEX_PART_1 + className + CLASS_REGEX_PART_2, Pattern.DOTALL);
         Matcher matcher = pattern.matcher(body);
         while (matcher.find()) {
             elements.add(new Element(matcher.group(0)));
@@ -100,8 +105,7 @@ public class Document {
     }
 
     public Element find(String id, String className) {
-        String regex = "<([a-zA-Z0-9]+)\\b[^>]*\\bid=['\"]" + id + "['\"][^>]*\\bclass=['\"][^'\"]*" + className + "[^'\"]*['\"][^>]*>(.*?)</\\1>";
-        Pattern pattern = Pattern.compile(regex, Pattern.DOTALL);
+        Pattern pattern = Pattern.compile(ID_CLASS_REGEX_PART_1 + id + ID_CLASS_REGEX_PART_2 + className + ID_CLASS_REGEX_PART_3, Pattern.DOTALL);
         Matcher matcher = pattern.matcher(body);
         if (matcher.find()) {
             return new Element(matcher.group(0));
@@ -111,8 +115,7 @@ public class Document {
 
     public List<Element> findAll(String id, String className) {
         List<Element> elements = new ArrayList<>();
-        String regex = "<([a-zA-Z0-9]+)\\b[^>]*\\bid=['\"]" + id + "['\"][^>]*\\bclass=['\"][^'\"]*" + className + "[^'\"]*['\"][^>]*>(.*?)</\\1>";
-        Pattern pattern = Pattern.compile(regex, Pattern.DOTALL);
+        Pattern pattern = Pattern.compile(ID_CLASS_REGEX_PART_1 + id + ID_CLASS_REGEX_PART_2 + className + ID_CLASS_REGEX_PART_3, Pattern.DOTALL);
         Matcher matcher = pattern.matcher(body);
         while (matcher.find()) {
             elements.add(new Element(matcher.group(0)));
