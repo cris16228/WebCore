@@ -3,7 +3,6 @@ package com.github.cris16228.webcore;
 import com.github.cris16228.webcore.models.Document;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -19,7 +18,7 @@ public class HttpClient {
     public static String DELETE = "DELETE";
     public static String PULL = "PULL";
     private String method = GET;
-    private Map<String, String> headers = new HashMap<>();
+    private final Map<String, String> headers = new HashMap<>();
 
     public HttpClient load(String url) {
         this.url = url;
@@ -45,7 +44,7 @@ public class HttpClient {
         }
         try {
             AsyncUtil web = new AsyncUtil();
-            Document document = web.execute(new AsyncUtil.onExecuteListener<Document>() {
+            return web.execute(new AsyncUtil.onExecuteListener<Document>() {
                 @Override
                 public void preExecute() {
 
@@ -69,7 +68,7 @@ public class HttpClient {
                             response.append(inputLine);
                         }
                         in.close();
-                        return new Document(responseCode, connection.getHeaderFields(), response.toString());
+                        return new Document(responseCode, connection.getHeaderFields(), response.toString(), connection.getURL());
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -81,7 +80,6 @@ public class HttpClient {
 
                 }
             });
-            return document;
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
