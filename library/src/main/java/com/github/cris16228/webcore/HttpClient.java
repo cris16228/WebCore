@@ -27,7 +27,8 @@ public class HttpClient {
     private final Map<String, String> headers = new HashMap<>();
     private boolean followRedirects;
     private Document document;
-    private static final String urlRegex = "(http|https)://([\\w-\\.]+(:\\d+)?(/([\\w/_\\-\\.]*\\??[\\w=&%\\-\\.]*#?[\\w\\-]*)?)?)";
+    private static final String urlRegex = "(https?://[\\w\\-\\.]+(:\\d+)?(/([\\w/_\\-\\.]*\\??[\\w=&%\\-\\.]*#?[\\w\\-]*)?)?)";
+
     private OnDocumentListener onDocumentListener;
 
 
