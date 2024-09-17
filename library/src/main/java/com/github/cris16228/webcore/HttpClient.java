@@ -1,5 +1,7 @@
 package com.github.cris16228.webcore;
 
+import android.util.Patterns;
+
 import com.github.cris16228.webcore.models.Document;
 
 import java.io.BufferedReader;
@@ -11,6 +13,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class HttpClient {
 
@@ -23,7 +27,8 @@ public class HttpClient {
     private final Map<String, String> headers = new HashMap<>();
     private boolean followRedirects;
     private Document document;
-    private OnDocumentBuiltListener onDocumentBuiltListener;
+    private static final String urlRegex = "(http|https)://([\\w-\\.]+(:\\d+)?(/([\\w/_\\-\\.]*\\??[\\w=&%\\-\\.]*#?[\\w\\-]*)?)?)";
+    private OnDocumentListener onDocumentListener;
 
 
     public HttpClient load(String url) {
@@ -32,11 +37,21 @@ public class HttpClient {
     }
 
     private String checkUrl(String _url) {
-        if (!_url.startsWith("http://") && !_url.startsWith("https://")) {
-            _url = "https://" + _url;
+        Pattern pattern = Pattern.compile(urlRegex);
+        Matcher matcher = pattern.matcher(_url);
+        if (matcher.find()) {
+            if (!_url.startsWith("http://") && !_url.startsWith("https://")) {
+                _url = "https://" + _url;
+            }
+            if (!_url.endsWith("/")) {
+                _url += "/";
+            }
+            if (!Patterns.WEB_URL.matcher(_url).matches()) {
+                return null;
+            }
+            return _url;
         }
-        //Add more
-        return _url;
+        return null;
     }
 
     public HttpClient setMethod(String method) {
@@ -54,12 +69,12 @@ public class HttpClient {
         return this;
     }
 
-    public HttpClient addOnCompleteListener(OnDocumentBuiltListener onDocumentBuiltListener) {
-        this.onDocumentBuiltListener = onDocumentBuiltListener;
+    public HttpClient addOnCompleteListener(OnDocumentListener onDocumentListener) {
+        this.onDocumentListener = onDocumentListener;
         return this;
     }
 
-    public Document build() {
+    public void build() {
         URL _url;
         try {
             _url = new URL(this.url);
@@ -101,8 +116,7 @@ public class HttpClient {
                             response.append(inputLine);
                         }
                         in.close();
-                        document = new Document(responseCode, connection.getHeaderFields(), response.toString(), connection.getURL(), history);
-                        return document;
+                        return new Document(responseCode, connection.getHeaderFields(), response.toString(), connection.getURL(), history);
                     } catch (Exception e) {
                         e.printStackTrace();
                         return null;
@@ -111,18 +125,18 @@ public class HttpClient {
 
                 @Override
                 public void postDelayed() {
-                    if (onDocumentBuiltListener != null) {
-                        onDocumentBuiltListener.onDocumentBuilt(document);
-                    }
                 }
-            }, null);
-            return document;
+            }, result -> {
+                if (onDocumentListener != null) {
+                    onDocumentListener.onComplete(result);
+                }
+            });
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public interface OnDocumentBuiltListener {
-        void onDocumentBuilt(Document document);
+    public interface OnDocumentListener {
+        void onComplete(Document document);
     }
 }

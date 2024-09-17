@@ -66,6 +66,10 @@ public class Document {
         return body;
     }
 
+    public List<String> getHistory() {
+        return history;
+    }
+
     public Element getElementById(String id) {
         Pattern pattern = Pattern.compile(ID_REGEX_PART_1 + id + ID_REGEX_PART_2, Pattern.DOTALL);
         Matcher matcher = pattern.matcher(body);

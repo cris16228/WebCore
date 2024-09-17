@@ -19,7 +19,7 @@ public class SocialCard {
             "(?=[^>]*property\\s*=\\s*\"og:description\")[^>]*content\\s*=\\s*\"([^\"]*)\"[^>]*>";
     private static final String TWITTER_DESCRIPTION_TAG = "<meta\\s+(?=[^>]*content\\s*=\\s*\"([^\"]*)\")[^>]*property\\s*=\\s*\"twitter:description\"[^>]*>|<meta\\s+" +
             "(?=[^>]*property\\s*=\\s*\"twitter:description\")[^>]*content\\s*=\\s*\"([^\"]*)\"[^>]*>";
-    private static final String OG_SITE_TAG = "<meta\\s+(?=[^>]*content\\s*=\\s*\"([^\"]*)\")[^>]*property\\s*=\\s*\"og:site\"[^>]*>|<meta\\s+(?=[^>]*property\\s*=\\s*\"og:site\")" +
+    private static final String OG_SITE_NAME_TAG = "<meta\\s+(?=[^>]*content\\s*=\\s*\"([^\"]*)\")[^>]*property\\s*=\\s*\"og:site_name\"[^>]*>|<meta\\s+(?=[^>]*property\\s*=\\s*\"og:site_name\")" +
             "[^>]*content\\s*=\\s*\"([^\"]*)\"[^>]*>";
     private static final String OG_URL_TAG = "<meta\\s+(?=[^>]*content\\s*=\\s*\"([^\"]*)\")[^>]*property\\s*=\\s*\"og:url\"[^>]*>|<meta\\s+(?=[^>]*property\\s*=\\s*\"og:url\")" +
             "[^>]*content\\s*=\\s*\"([^\"]*)\"[^>]*>";
@@ -36,11 +36,14 @@ public class SocialCard {
     }
 
     public String getImageUrl() {
+
+        //Tries to find the image url in the meta tag og:image
         Pattern pattern = Pattern.compile(OG_IMAGE_TAG);
         Matcher matcher = pattern.matcher(body);
         if (matcher.find()) {
             imageUrl = matcher.group(1);
         }
+        //Tries to find the image url in the meta tag twitter:image if the first one fails
         if (TextUtils.isEmpty(imageUrl)) {
             pattern = Pattern.compile(TWITTER_IMAGE_TAG);
             matcher = pattern.matcher(body);
@@ -48,15 +51,21 @@ public class SocialCard {
                 imageUrl = matcher.group(1);
             }
         }
+        if (TextUtils.isEmpty(imageUrl)) {
+
+        }
         return imageUrl;
     }
 
     public String getTitle() {
+
+        // Tries to find the title url in the meta tag og:image
         Pattern pattern = Pattern.compile(OG_TITLE_TAG);
         Matcher matcher = pattern.matcher(body);
         if (matcher.find()) {
             title = matcher.group(1);
         }
+        //Tries to find the title url in the meta tag twitter:title if the first one fails
         if (TextUtils.isEmpty(title)) {
             pattern = Pattern.compile(TWITTER_TITLE_TAG);
             matcher = pattern.matcher(body);
@@ -68,7 +77,8 @@ public class SocialCard {
     }
 
     public String getSite() {
-        Pattern pattern = Pattern.compile(OG_SITE_TAG);
+        // Tries to find the site name in the meta tag og:site
+        Pattern pattern = Pattern.compile(OG_SITE_NAME_TAG);
         Matcher matcher = pattern.matcher(body);
         if (matcher.find()) {
             site = matcher.group(1);
@@ -77,6 +87,7 @@ public class SocialCard {
     }
 
     public String getUrl() {
+        // Tries to find the site url in the meta tag og:url
         Pattern pattern = Pattern.compile(OG_URL_TAG);
         Matcher matcher = pattern.matcher(body);
         if (matcher.find()) {
@@ -86,6 +97,7 @@ public class SocialCard {
     }
 
     public String getDescription() {
+        // Tries to find the site description in the meta tag og:description
         Pattern pattern = Pattern.compile(OG_DESCRIPTION_TAG);
         Matcher matcher = pattern.matcher(body);
         if (matcher.find()) {
