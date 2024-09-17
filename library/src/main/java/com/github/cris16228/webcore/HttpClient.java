@@ -106,15 +106,10 @@ public class HttpClient {
                 public void postDelayed() {
 
                 }
-            }, new AsyncUtil.OnResultListener<Document>() {
-                @Override
-                public void onResult(Document result) {
-                    document = result;
-                }
-            });
+            }, result -> document = result);
+            return document;
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        return document;
     }
 }
