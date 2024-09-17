@@ -5,10 +5,13 @@ import android.util.Patterns;
 import com.github.cris16228.webcore.models.Document;
 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +28,7 @@ public class HttpClient {
     public static String PULL = "PULL";
     private String method = GET;
     private final Map<String, String> headers = new HashMap<>();
+    private final Map<String, String> params = new HashMap<>();
     private boolean followRedirects;
     private Document document;
     private static final String urlRegex = "(https?://[\\w\\-\\.]+(:\\d+)?(/([\\w/_\\-\\.]*\\??[\\w=&%\\-\\.]*#?[\\w\\-]*)?)?)";
@@ -60,8 +64,13 @@ public class HttpClient {
         return this;
     }
 
-    public HttpClient setHeader(String key, String value) {
+    public HttpClient addHeader(String key, String value) {
         headers.put(key, value);
+        return this;
+    }
+
+    public HttpClient addParam(String key, String value) {
+        params.put(key, value);
         return this;
     }
 
@@ -95,6 +104,12 @@ public class HttpClient {
                     try {
                         List<String> history = new ArrayList<>();
                         history.add(url);
+                        URL _url;
+                        if ("GET".equalsIgnoreCase(method)) {
+                            _url = new URL(setGetUrl(url, params));
+                        } else {
+                            _url = new URL(url);
+                        }
                         HttpURLConnection connection = (HttpURLConnection) _url.openConnection();
 
                         connection.setRequestMethod(method);
@@ -102,6 +117,19 @@ public class HttpClient {
                         for (Map.Entry<String, String> header : headers.entrySet()) {
                             connection.setRequestProperty(header.getKey(), header.getValue());
                         }
+
+                        if ("POST".equalsIgnoreCase(method)) {
+                            connection.setDoOutput(true);
+                            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                            try {
+                                DataOutputStream out = new DataOutputStream(connection.getOutputStream());
+                                out.writeBytes(setPostData(params));
+                                out.flush();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+
                         int responseCode = connection.getResponseCode();
                         if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP || responseCode == HttpURLConnection.HTTP_MOVED_PERM) {
                             if (!history.contains(connection.getHeaderField("Location"))) {
@@ -136,6 +164,34 @@ public class HttpClient {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private String setPostData(Map<String, String> params) {
+        if (params.isEmpty()) {
+            return url;
+        }
+        StringBuilder result = new StringBuilder(url);
+        result.append(url.contains("?") ? "&" : "?");
+        for (Map.Entry<String, String> param : params.entrySet()) {
+            result.append(URLEncoder.encode(param.getKey(), StandardCharsets.UTF_8))
+                    .append("=")
+                    .append(URLEncoder.encode(param.getValue(), StandardCharsets.UTF_8))
+                    .append("&");
+        }
+        result.setLength(result.length() - 1);
+        return result.toString();
+    }
+
+    private String setGetUrl(String url, Map<String, String> params) {
+        StringBuilder result = new StringBuilder();
+        for (Map.Entry<String, String> param : params.entrySet()) {
+            result.append(URLEncoder.encode(param.getKey(), StandardCharsets.UTF_8))
+                    .append("=")
+                    .append(URLEncoder.encode(param.getValue(), StandardCharsets.UTF_8))
+                    .append("&");
+        }
+        result.setLength(result.length() - 1);
+        return result.toString();
     }
 
     public interface OnDocumentListener {
