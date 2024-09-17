@@ -22,6 +22,7 @@ public class HttpClient {
     private String method = GET;
     private final Map<String, String> headers = new HashMap<>();
     private boolean followRedirects;
+    private Document document;
 
 
     public HttpClient load(String url) {
@@ -61,7 +62,7 @@ public class HttpClient {
         }
         try {
             AsyncUtil web = new AsyncUtil();
-            return web.execute(new AsyncUtil.onExecuteListener<Document>() {
+            web.execute(new AsyncUtil.onExecuteListener<Document>() {
                 @Override
                 public void preExecute() {
 
@@ -105,9 +106,15 @@ public class HttpClient {
                 public void postDelayed() {
 
                 }
+            }, new AsyncUtil.OnResultListener<Document>() {
+                @Override
+                public void onResult(Document result) {
+                    document = result;
+                }
             });
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+        return document;
     }
 }
