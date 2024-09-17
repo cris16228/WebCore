@@ -53,7 +53,7 @@ public class HttpClient {
         return this;
     }
 
-    public Document build() {
+    public Document build(OnDocumentBuiltListener listener) {
         URL _url;
         try {
             _url = new URL(this.url);
@@ -98,18 +98,22 @@ public class HttpClient {
                         return new Document(responseCode, connection.getHeaderFields(), response.toString(), connection.getURL(), history);
                     } catch (Exception e) {
                         e.printStackTrace();
+                        return null;
                     }
-                    return null;
                 }
 
                 @Override
                 public void postDelayed() {
 
                 }
-            }, result -> document = result);
+            }, listener::onDocumentBuilt);
             return document;
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public interface OnDocumentBuiltListener {
+        void onDocumentBuilt(Document document);
     }
 }
