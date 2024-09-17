@@ -96,6 +96,7 @@ public class HttpClient {
                         List<String> history = new ArrayList<>();
                         history.add(url);
                         HttpURLConnection connection = (HttpURLConnection) _url.openConnection();
+
                         connection.setRequestMethod(method);
                         connection.setInstanceFollowRedirects(followRedirects);
                         for (Map.Entry<String, String> header : headers.entrySet()) {
