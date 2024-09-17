@@ -167,9 +167,6 @@ public class HttpClient {
     }
 
     private String setPostData(Map<String, String> params) {
-        if (params.isEmpty()) {
-            return url;
-        }
         StringBuilder result = new StringBuilder(url);
         result.append(url.contains("?") ? "&" : "?");
         for (Map.Entry<String, String> param : params.entrySet()) {
@@ -183,6 +180,9 @@ public class HttpClient {
     }
 
     private String setGetUrl(String url, Map<String, String> params) {
+        if (params.isEmpty()) {
+            return url;
+        }
         StringBuilder result = new StringBuilder();
         for (Map.Entry<String, String> param : params.entrySet()) {
             result.append(URLEncoder.encode(param.getKey(), StandardCharsets.UTF_8))
