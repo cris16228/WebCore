@@ -23,6 +23,7 @@ public class HttpClient {
     private final Map<String, String> headers = new HashMap<>();
     private boolean followRedirects;
     private Document document;
+    private OnDocumentBuiltListener onDocumentBuiltListener;
 
 
     public HttpClient load(String url) {
@@ -53,7 +54,12 @@ public class HttpClient {
         return this;
     }
 
-    public Document build(OnDocumentBuiltListener listener) {
+    public HttpClient addOnCompleteListener(OnDocumentBuiltListener onDocumentBuiltListener) {
+        this.onDocumentBuiltListener = onDocumentBuiltListener;
+        return this;
+    }
+
+    public Document build() {
         URL _url;
         try {
             _url = new URL(this.url);
@@ -95,7 +101,8 @@ public class HttpClient {
                             response.append(inputLine);
                         }
                         in.close();
-                        return new Document(responseCode, connection.getHeaderFields(), response.toString(), connection.getURL(), history);
+                        document = new Document(responseCode, connection.getHeaderFields(), response.toString(), connection.getURL(), history);
+                        return document;
                     } catch (Exception e) {
                         e.printStackTrace();
                         return null;
@@ -104,9 +111,11 @@ public class HttpClient {
 
                 @Override
                 public void postDelayed() {
-
+                    if (onDocumentBuiltListener != null) {
+                        onDocumentBuiltListener.onDocumentBuilt(document);
+                    }
                 }
-            }, listener::onDocumentBuilt);
+            }, null);
             return document;
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
