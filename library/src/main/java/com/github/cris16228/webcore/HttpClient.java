@@ -167,15 +167,18 @@ public class HttpClient {
     }
 
     private String setPostData(Map<String, String> params) {
-        StringBuilder result = new StringBuilder(url);
-        result.append(url.contains("?") ? "&" : "?");
+        StringBuilder result = new StringBuilder();
+        boolean first = true;
         for (Map.Entry<String, String> param : params.entrySet()) {
-            result.append(URLEncoder.encode(param.getKey(), StandardCharsets.UTF_8))
-                    .append("=")
-                    .append(URLEncoder.encode(param.getValue(), StandardCharsets.UTF_8))
-                    .append("&");
+            if (first) {
+                first = false;
+            } else {
+                result.append("&");
+            }
+            result.append(URLEncoder.encode(param.getKey(), StandardCharsets.UTF_8));
+            result.append("=");
+            result.append(URLEncoder.encode(param.getValue(), StandardCharsets.UTF_8));
         }
-        result.setLength(result.length() - 1);
         return result.toString();
     }
 
@@ -183,12 +186,18 @@ public class HttpClient {
         if (params.isEmpty()) {
             return url;
         }
-        StringBuilder result = new StringBuilder();
+        StringBuilder result = new StringBuilder(url);
+        result.append(url.contains("?") ? "&" : "?");
+        boolean first = true;
         for (Map.Entry<String, String> param : params.entrySet()) {
-            result.append(URLEncoder.encode(param.getKey(), StandardCharsets.UTF_8))
-                    .append("=")
-                    .append(URLEncoder.encode(param.getValue(), StandardCharsets.UTF_8))
-                    .append("&");
+            if (first) {
+                first = false;
+            } else {
+                result.append("&");
+            }
+            result.append(URLEncoder.encode(param.getKey(), StandardCharsets.UTF_8));
+            result.append("=");
+            result.append(URLEncoder.encode(param.getValue(), StandardCharsets.UTF_8));
         }
         result.setLength(result.length() - 1);
         return result.toString();

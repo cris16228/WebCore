@@ -23,6 +23,7 @@ public class SocialCard {
             "[^>]*content\\s*=\\s*\"([^\"]*)\"[^>]*>";
     private static final String OG_URL_TAG = "<meta\\s+(?=[^>]*content\\s*=\\s*\"([^\"]*)\")[^>]*property\\s*=\\s*\"og:url\"[^>]*>|<meta\\s+(?=[^>]*property\\s*=\\s*\"og:url\")" +
             "[^>]*content\\s*=\\s*\"([^\"]*)\"[^>]*>";
+    private static final String TITLE_TAG = "<title.*?>(.*?)</title>";
 
     private final String body;
     private String imageUrl;
@@ -35,7 +36,25 @@ public class SocialCard {
         this.body = body;
     }
 
+    /**
+     * It tries to find the image url in the meta tags used for social media:
+     * It checks for og:image then twitter:image if the first fails
+     *
+     * @return {@imageUrl String} if found, empty otherwise
+     */
+
     public String getImageUrl() {
+        return getImageUrl(false);
+    }
+
+    /**
+     * It tries to find the image url in the meta tags used for social media:
+     * It checks for og:image then twitter:image if the first fails
+     *
+     * @param checkFavicon if true, tries to find the image url of the favicon - used as last resort if everything else fails
+     * @return {@imageUrl String} if found, empty otherwise
+     */
+    public String getImageUrl(boolean checkFavicon) {
 
         //Tries to find the image url in the meta tag og:image
         Pattern pattern = Pattern.compile(OG_IMAGE_TAG);
@@ -51,23 +70,35 @@ public class SocialCard {
                 imageUrl = matcher.group(1);
             }
         }
-        if (TextUtils.isEmpty(imageUrl)) {
+        if (TextUtils.isEmpty(imageUrl) && checkFavicon) {
 
         }
         return imageUrl;
     }
 
+    /**
+     * It tries to find the title in the meta tags used for social media:
+     * It checks for og:title then twitter:title if the first fails
+     * If all this fails, return the <title></title> content
+     *
+     * @return {@title String} if found, empty otherwise
+     */
     public String getTitle() {
 
-        // Tries to find the title url in the meta tag og:image
         Pattern pattern = Pattern.compile(OG_TITLE_TAG);
         Matcher matcher = pattern.matcher(body);
         if (matcher.find()) {
             title = matcher.group(1);
         }
-        //Tries to find the title url in the meta tag twitter:title if the first one fails
         if (TextUtils.isEmpty(title)) {
             pattern = Pattern.compile(TWITTER_TITLE_TAG);
+            matcher = pattern.matcher(body);
+            if (matcher.find()) {
+                title = matcher.group(1);
+            }
+        }
+        if (TextUtils.isEmpty(title)) {
+            pattern = Pattern.compile(TITLE_TAG);
             matcher = pattern.matcher(body);
             if (matcher.find()) {
                 title = matcher.group(1);
@@ -76,8 +107,13 @@ public class SocialCard {
         return title;
     }
 
+    /**
+     * It tries to find the site name in the meta tags used for social media:
+     * It checks for og:site
+     *
+     * @return {@site String} if found, empty otherwise
+     */
     public String getSite() {
-        // Tries to find the site name in the meta tag og:site
         Pattern pattern = Pattern.compile(OG_SITE_NAME_TAG);
         Matcher matcher = pattern.matcher(body);
         if (matcher.find()) {
@@ -86,8 +122,13 @@ public class SocialCard {
         return site;
     }
 
+    /**
+     * It tries to find the site url in the meta tags used for social media:
+     * It checks for og:url
+     *
+     * @return {@url String} if found, empty otherwise
+     */
     public String getUrl() {
-        // Tries to find the site url in the meta tag og:url
         Pattern pattern = Pattern.compile(OG_URL_TAG);
         Matcher matcher = pattern.matcher(body);
         if (matcher.find()) {
@@ -96,8 +137,13 @@ public class SocialCard {
         return url;
     }
 
+    /**
+     * It tries to find the site name in the meta tags used for social media:
+     * It checks for og:description then twitter:description if the first fails
+     *
+     * @return {@description String} if found, empty otherwise
+     */
     public String getDescription() {
-        // Tries to find the site description in the meta tag og:description
         Pattern pattern = Pattern.compile(OG_DESCRIPTION_TAG);
         Matcher matcher = pattern.matcher(body);
         if (matcher.find()) {
