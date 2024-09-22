@@ -2,6 +2,7 @@ package com.github.cris16228.webcore.models;
 
 import android.text.TextUtils;
 
+import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -11,6 +12,7 @@ public class SocialCard {
             "[^>]*content\\s*=\\s*\"([^\"]*)\"[^>]*>";
     private static final String TWITTER_IMAGE_TAG = "<meta\\s+(?=[^>]*content\\s*=\\s*\"([^\"]*)\")[^>]*property\\s*=\\s*\"twitter:image\"[^>]*>|<meta\\s+(?=[^>]*property\\s*=\\s*\"twitter:image\")" +
             "[^>]*content\\s*=\\s*\"([^\"]*)\"[^>]*>";
+    public static final String FAVICON = "<link[^>]+rel=[\"'](icon|shortcut icon)[\"'][^>]+href=[\"']([^\"']+)[\"']";
     private static final String OG_TITLE_TAG = "<meta\\s+(?=[^>]*content\\s*=\\s*\"([^\"]*)\")[^>]*property\\s*=\\s*\"og:title\"[^>]*>|<meta\\s+(?=[^>]*property\\s*=\\s*\"og:title\")" +
             "[^>]*content\\s*=\\s*\"([^\"]*)\"[^>]*>";
     private static final String TWITTER_TITLE_TAG = "<meta\\s+(?=[^>]*content\\s*=\\s*\"([^\"]*)\")[^>]*property\\s*=\\s*\"twitter:title\"[^>]*>|<meta\\s+(?=[^>]*property\\s*=\\s*\"twitter:title\")" +
@@ -26,14 +28,16 @@ public class SocialCard {
     private static final String TITLE_TAG = "<title.*?>(.*?)</title>";
 
     private final String body;
+    private final URL _url;
     private String imageUrl;
     private String title;
     private String description;
     private String site;
     private String url;
 
-    public SocialCard(String body) {
+    public SocialCard(String body, URL url) {
         this.body = body;
+        this._url = url;
     }
 
     /**
@@ -70,8 +74,18 @@ public class SocialCard {
                 imageUrl = matcher.group(1);
             }
         }
+        //Tries to find the image url of the favicon if everything else fails
         if (TextUtils.isEmpty(imageUrl) && checkFavicon) {
-
+            pattern = Pattern.compile(FAVICON);
+            matcher = pattern.matcher(body);
+            if (matcher.find()) {
+                imageUrl = matcher.group(2);
+                if (TextUtils.isEmpty(imageUrl)) {
+                    if (!imageUrl.startsWith("http") || !imageUrl.startsWith("https")) {
+                        imageUrl = _url.getProtocol() + "://" + _url.getHost() + imageUrl;
+                    }
+                }
+            }
         }
         return imageUrl;
     }
