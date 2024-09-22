@@ -128,6 +128,6 @@ public class Document {
     }
 
     public SocialCard getSocialCard() {
-        return new SocialCard(body);
+        return new SocialCard(body, url);
     }
 }
