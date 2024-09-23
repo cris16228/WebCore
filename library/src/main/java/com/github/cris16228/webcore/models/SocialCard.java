@@ -80,7 +80,7 @@ public class SocialCard {
             matcher = pattern.matcher(body);
             if (matcher.find()) {
                 imageUrl = matcher.group(2);
-                if (TextUtils.isEmpty(imageUrl)) {
+                if (!TextUtils.isEmpty(imageUrl)) {
                     if (!imageUrl.startsWith("http") || !imageUrl.startsWith("https")) {
                         imageUrl = _url.getProtocol() + "://" + _url.getHost() + imageUrl;
                     }
