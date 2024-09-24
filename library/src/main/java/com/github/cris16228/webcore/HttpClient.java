@@ -1,5 +1,6 @@
 package com.github.cris16228.webcore;
 
+import android.util.Log;
 import android.util.Patterns;
 
 import com.github.cris16228.webcore.models.Document;
@@ -31,7 +32,11 @@ public class HttpClient {
     private final Map<String, String> params = new HashMap<>();
     private boolean followRedirects;
     private Document document;
+    private int maxRetries = 5;
+    private int currentRedirects = 0;
     private static final String urlRegex = "(https?://[\\w\\-\\.]+(:\\d+)?(/([\\w/_\\-\\.]*\\??[\\w=&%\\-\\.]*#?[\\w\\-]*)?)?)";
+    private String userAgent;
+    private String defaultUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) rv:130.0) Gecko/20100101 Firefox/130.0";
 
     private OnDocumentListener onDocumentListener;
 
@@ -57,6 +62,21 @@ public class HttpClient {
             return _url;
         }
         return null;
+    }
+
+    public HttpClient getDefaultUserAgent() {
+        this.userAgent = defaultUserAgent;
+        return this;
+    }
+
+    public HttpClient setUserAgent(String userAgent) {
+        this.userAgent = userAgent;
+        return this;
+    }
+
+    public HttpClient setMaxRetries(int maxRetries) {
+        this.maxRetries = maxRetries;
+        return this;
     }
 
     public HttpClient setMethod(String method) {
@@ -102,6 +122,9 @@ public class HttpClient {
                 @Override
                 public Document doInBackground() {
                     try {
+                        boolean redirect;
+                        HttpURLConnection connection;
+                        int responseCode;
                         List<String> history = new ArrayList<>();
                         history.add(url);
                         URL _url;
@@ -110,32 +133,48 @@ public class HttpClient {
                         } else {
                             _url = new URL(url);
                         }
-                        HttpURLConnection connection = (HttpURLConnection) _url.openConnection();
-
-                        connection.setRequestMethod(method);
-                        connection.setInstanceFollowRedirects(followRedirects);
-                        for (Map.Entry<String, String> header : headers.entrySet()) {
-                            connection.setRequestProperty(header.getKey(), header.getValue());
-                        }
-
-                        if ("POST".equalsIgnoreCase(method)) {
-                            connection.setDoOutput(true);
-                            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-                            try {
-                                DataOutputStream out = new DataOutputStream(connection.getOutputStream());
-                                out.writeBytes(setPostData(params));
-                                out.flush();
-                            } catch (Exception e) {
-                                e.printStackTrace();
+                        do {
+                            connection = (HttpURLConnection) _url.openConnection();
+                            connection.setRequestMethod(method);
+                            connection.setInstanceFollowRedirects(false);
+                            for (Map.Entry<String, String> header : headers.entrySet()) {
+                                connection.setRequestProperty(header.getKey(), header.getValue());
                             }
-                        }
-
-                        int responseCode = connection.getResponseCode();
-                        if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP || responseCode == HttpURLConnection.HTTP_MOVED_PERM) {
-                            if (!history.contains(connection.getHeaderField("Location"))) {
-                                history.add(connection.getHeaderField("Location"));
+                            if (userAgent != null) {
+                                connection.setRequestProperty("User-Agent", userAgent);
                             }
-                        }
+
+                            if ("POST".equalsIgnoreCase(method)) {
+                                connection.setDoOutput(true);
+                                connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                                try {
+                                    DataOutputStream out = new DataOutputStream(connection.getOutputStream());
+                                    out.writeBytes(setPostData(params));
+                                    out.flush();
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+
+                            responseCode = connection.getResponseCode();
+                            redirect = (responseCode == HttpURLConnection.HTTP_MOVED_TEMP || responseCode == HttpURLConnection.HTTP_MOVED_PERM || responseCode == HttpURLConnection.HTTP_SEE_OTHER);
+                            if (redirect && followRedirects) {
+                                currentRedirects++;
+                                String newUrl = connection.getHeaderField("Location");
+                                Log.i("HttpClient", "Redirecting from " + _url + " to " + newUrl + "(" + currentRedirects + "/" + maxRetries + ")");
+                                if (currentRedirects > maxRetries) {
+                                    Log.e("HttpClient", "Max retries reached");
+                                }
+                                if (newUrl != null) {
+                                    _url = new URL(newUrl);
+                                    if (!history.contains(newUrl)) {
+                                        history.add(newUrl);
+                                    }
+                                } else {
+                                    break;
+                                }
+                            }
+                        } while (redirect && followRedirects);
                         BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                         if (!history.contains(connection.getURL().toString())) {
                             history.add(connection.getURL().toString());
@@ -156,7 +195,9 @@ public class HttpClient {
                 @Override
                 public void postDelayed() {
                 }
-            }, result -> {
+            }, result ->
+
+            {
                 if (onDocumentListener != null) {
                     onDocumentListener.onComplete(result);
                 }
