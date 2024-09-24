@@ -163,11 +163,16 @@ public class HttpClient {
                                 String newUrl = connection.getHeaderField("Location");
                                 if (newUrl != null) {
                                     if (!newUrl.startsWith("http") || !newUrl.startsWith("https")) {
+                                        Log.i("HttpClient", "Old url: " + _url + " New url: " + newUrl);
                                         newUrl = _url.getProtocol() + "://" + _url.getHost() + newUrl;
+                                        Log.i("HttpClient", "New url: " + newUrl);
                                     }
-                                    Log.i("HttpClient", "Redirecting from " + _url + " to " + newUrl + " (" + currentRedirects + "/" + maxRetries + ")");
-                                    if (maxRetries > 0 && currentRedirects > maxRetries) {
-                                        Log.e("HttpClient", "Max retries reached");
+                                    if (maxRetries > 0) {
+                                        Log.i("HttpClient", "Redirecting from " + _url + " to " + newUrl + " (" + currentRedirects + "/" + maxRetries + ")");
+                                        if (currentRedirects >= maxRetries) {
+                                            Log.e("HttpClient", "Max retries reached");
+                                            break;
+                                        }
                                     } else {
                                         Log.i("HttpClient", "Redirecting from " + _url + " to " + newUrl);
                                     }
@@ -179,7 +184,8 @@ public class HttpClient {
                                     break;
                                 }
                             }
-                        } while (redirect && followRedirects);
+                        }
+                        while (redirect && followRedirects);
                         BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                         if (!history.contains(connection.getURL().toString())) {
                             history.add(connection.getURL().toString());
@@ -191,7 +197,8 @@ public class HttpClient {
                         }
                         in.close();
                         return new Document(responseCode, connection.getHeaderFields(), response.toString(), connection.getURL(), history);
-                    } catch (Exception e) {
+                    } catch (
+                            Exception e) {
                         e.printStackTrace();
                         return null;
                     }
@@ -207,7 +214,8 @@ public class HttpClient {
                     onDocumentListener.onComplete(result);
                 }
             });
-        } catch (InterruptedException e) {
+        } catch (
+                InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
