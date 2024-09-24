@@ -188,7 +188,7 @@ public class HttpClient {
                         return new Document(responseCode, connection.getHeaderFields(), response.toString(), connection.getURL(), history);
                     } catch (Exception e) {
                         e.printStackTrace();
-                        return new Document(404, null, "<h1>404 Not Found</h1>", null, null);
+                        return null;
                     }
                 }
 
