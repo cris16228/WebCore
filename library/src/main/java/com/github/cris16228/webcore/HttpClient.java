@@ -32,7 +32,7 @@ public class HttpClient {
     private final Map<String, String> params = new HashMap<>();
     private boolean followRedirects;
     private Document document;
-    private int maxRetries = 5;
+    private int maxRetries = -1;
     private int currentRedirects = 0;
     private static final String urlRegex = "(https?://[\\w\\-\\.]+(:\\d+)?(/([\\w/_\\-\\.]*\\??[\\w=&%\\-\\.]*#?[\\w\\-]*)?)?)";
     private String userAgent;
@@ -161,14 +161,14 @@ public class HttpClient {
                             if (redirect && followRedirects) {
                                 currentRedirects++;
                                 String newUrl = connection.getHeaderField("Location");
-                                Log.i("HttpClient", "Redirecting from " + _url + " to " + newUrl + "(" + currentRedirects + "/" + maxRetries + ")");
-                                if (currentRedirects > maxRetries) {
+                                Log.i("HttpClient", "Redirecting from " + _url + " to " + newUrl + " (" + currentRedirects + "/" + maxRetries + ")");
+                                if (maxRetries > 0 && currentRedirects > maxRetries) {
                                     Log.e("HttpClient", "Max retries reached");
                                 }
                                 if (newUrl != null) {
-                                    _url = new URL(newUrl);
                                     if (!history.contains(newUrl)) {
                                         history.add(newUrl);
+                                        _url = new URL(newUrl);
                                     }
                                 } else {
                                     break;
@@ -188,7 +188,7 @@ public class HttpClient {
                         return new Document(responseCode, connection.getHeaderFields(), response.toString(), connection.getURL(), history);
                     } catch (Exception e) {
                         e.printStackTrace();
-                        return null;
+                        return new Document(404, null, "<h1>404 Not Found</h1>", null, null);
                     }
                 }
 
