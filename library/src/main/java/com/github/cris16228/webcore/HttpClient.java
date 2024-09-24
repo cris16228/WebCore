@@ -162,10 +162,8 @@ public class HttpClient {
                                 currentRedirects++;
                                 String newUrl = connection.getHeaderField("Location");
                                 if (newUrl != null) {
-                                    if (!newUrl.startsWith("http") || !newUrl.startsWith("https")) {
-                                        Log.i("HttpClient", "Old url: " + _url + " New url: " + newUrl);
+                                    if (!newUrl.startsWith("http") && !newUrl.startsWith("https")) {
                                         newUrl = _url.getProtocol() + "://" + _url.getHost() + newUrl;
-                                        Log.i("HttpClient", "New url: " + newUrl);
                                     }
                                     if (maxRetries > 0) {
                                         Log.i("HttpClient", "Redirecting from " + _url + " to " + newUrl + " (" + currentRedirects + "/" + maxRetries + ")");
