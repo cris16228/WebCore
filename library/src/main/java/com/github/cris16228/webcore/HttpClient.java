@@ -130,41 +130,40 @@ public class HttpClient {
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
-        try {
-            WebCoreProcess web = new WebCoreProcess();
-            web.execute(new WebCoreProcess.onExecuteListener<Document>() {
-                @Override
-                public void preExecute() {
+        if (legacy) {
+            try {
+                WebCoreProcess web = new WebCoreProcess();
+                web.execute(new WebCoreProcess.onExecuteListener<Document>() {
+                    @Override
+                    public void preExecute() {
 
-                }
-
-                @Override
-                public Document doInBackground() {
-                    if (legacy) {
-                        return legacyConnection();
-                    } else {
-                        return connection();
                     }
-                }
 
-                @Override
-                public void postDelayed() {
-                }
-            }, result ->
+                    @Override
+                    public Document doInBackground() {
+                        return legacyConnection();
+                    }
 
-            {
-                if (onDocumentListener != null) {
-                    onDocumentListener.onComplete(result);
-                }
-            });
-        } catch (
-                InterruptedException e) {
-            throw new RuntimeException(e);
+                    @Override
+                    public void postDelayed() {
+                        connection();
+                    }
+                }, result ->
+
+                {
+                    if (onDocumentListener != null) {
+                        onDocumentListener.onComplete(result);
+                    }
+                });
+            } catch (
+                    InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
     @SuppressLint("SetJavaScriptEnabled")
-    private Document connection() {
+    private void connection() {
         if (context == null) {
             throw new RuntimeException("Context is null. Please user new HttpClient(context) instead!");
         }
@@ -182,7 +181,6 @@ public class HttpClient {
 
         webView.addJavascriptInterface(new CustomJavaScriptInterface(onHtmlFetchedListener), "HTMLOUT");
         webView.loadUrl(url);
-        return document;
     }
 
     private String setPostData(Map<String, String> params) {
