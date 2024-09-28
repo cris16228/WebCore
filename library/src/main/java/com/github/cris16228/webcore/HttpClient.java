@@ -130,36 +130,41 @@ public class HttpClient {
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
-        if (legacy) {
-            try {
-                WebCoreProcess web = new WebCoreProcess();
-                web.execute(new WebCoreProcess.onExecuteListener<Document>() {
-                    @Override
-                    public void preExecute() {
 
+        try {
+            WebCoreProcess web = new WebCoreProcess();
+            web.execute(new WebCoreProcess.onExecuteListener<Document>() {
+                @Override
+                public void preExecute() {
+                    if (!legacy) {
+                        connection();
+                        return;
                     }
+                }
 
-                    @Override
-                    public Document doInBackground() {
+                @Override
+                public Document doInBackground() {
+                    if (legacy) {
                         return legacyConnection();
                     }
+                    return null;
+                }
 
-                    @Override
-                    public void postDelayed() {
-                        connection();
-                    }
-                }, result ->
+                @Override
+                public void postDelayed() {
+                }
+            }, result ->
 
-                {
-                    if (onDocumentListener != null) {
-                        onDocumentListener.onComplete(result);
-                    }
-                });
-            } catch (
-                    InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+            {
+                if (onDocumentListener != null) {
+                    onDocumentListener.onComplete(result);
+                }
+            });
+        } catch (
+                InterruptedException e) {
+            throw new RuntimeException(e);
         }
+
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -173,6 +178,7 @@ public class HttpClient {
         webView.setWebViewClient(new CustomWebClient());
         OnHtmlFetchedListener onHtmlFetchedListener = html -> {
             try {
+                System.out.println(html);
                 document = new Document(html, new URL(webView.getUrl()));
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
