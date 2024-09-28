@@ -4,11 +4,12 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.Log;
 import android.util.Patterns;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 import com.github.cris16228.webcore.models.Document;
 import com.github.cris16228.webcore.utils.CustomJavaScriptInterface;
-import com.github.cris16228.webcore.utils.CustomWebClient;
 import com.github.cris16228.webcore.utils.OnHtmlFetchedListener;
 
 import java.io.BufferedReader;
@@ -189,24 +190,18 @@ public class HttpClient {
             }
         };
         webView.addJavascriptInterface(new CustomJavaScriptInterface(onHtmlFetchedListener, webView), "HTMLOUT");
-        webView.setWebViewClient(new CustomWebClient());
-        webView.loadUrl(url);
-    }
-
-    private String setPostData(Map<String, String> params) {
-        StringBuilder result = new StringBuilder();
-        boolean first = true;
-        for (Map.Entry<String, String> param : params.entrySet()) {
-            if (first) {
-                first = false;
-            } else {
-                result.append("&");
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                return false;
             }
-            result.append(URLEncoder.encode(param.getKey(), StandardCharsets.UTF_8));
-            result.append("=");
-            result.append(URLEncoder.encode(param.getValue(), StandardCharsets.UTF_8));
-        }
-        return result.toString();
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                view.loadUrl("javascript:window.HTMLOUT.processHTML(document.getElementsByTagName('html')[0].innerHTML);");
+            }
+        });
+        webView.loadUrl(url);
     }
 
     private Document legacyConnection() {
@@ -289,6 +284,23 @@ public class HttpClient {
             e.printStackTrace();
             return null;
         }
+    }
+
+
+    private String setPostData(Map<String, String> params) {
+        StringBuilder result = new StringBuilder();
+        boolean first = true;
+        for (Map.Entry<String, String> param : params.entrySet()) {
+            if (first) {
+                first = false;
+            } else {
+                result.append("&");
+            }
+            result.append(URLEncoder.encode(param.getKey(), StandardCharsets.UTF_8));
+            result.append("=");
+            result.append(URLEncoder.encode(param.getValue(), StandardCharsets.UTF_8));
+        }
+        return result.toString();
     }
 
     private String setGetUrl(String url, Map<String, String> params) {

@@ -16,6 +16,6 @@ public class CustomJavaScriptInterface {
 
     @JavascriptInterface
     public void processHTML(String html) {
-        webView.post(() -> onHtmlFetchedListener.onHtmlFetched(html));
+        onHtmlFetchedListener.onHtmlFetched(html);
     }
 }
