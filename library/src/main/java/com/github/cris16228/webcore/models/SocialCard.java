@@ -82,18 +82,13 @@ public class SocialCard {
                 imageUrl = matcher.group(2);
                 if (!TextUtils.isEmpty(imageUrl)) {
                     if (!imageUrl.startsWith("http") || !imageUrl.startsWith("https")) {
-                        System.out.println(_url.getProtocol());
-                        System.out.println(_url.getHost());
-                        System.out.println(imageUrl);
                         imageUrl = _url.getProtocol() + "://" + _url.getHost() + imageUrl;
                     }
-                    System.out.println(imageUrl);
-                    imageUrl = imageUrl.trim();
-                    imageUrl = imageUrl.replaceAll("[\\$]", "");
-                    System.out.println(imageUrl);
                 }
             }
         }
+        imageUrl = imageUrl.trim();
+        imageUrl = imageUrl.replaceAll("[\\$]", "");
         return imageUrl;
     }
 
