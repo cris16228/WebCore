@@ -175,7 +175,6 @@ public class HttpClient {
         WebView webView = new WebView(context);
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setDomStorageEnabled(true);
-        webView.setWebViewClient(new CustomWebClient());
         OnHtmlFetchedListener onHtmlFetchedListener = html -> {
             try {
                 document = new Document(html, new URL(webView.getUrl()));
@@ -189,8 +188,8 @@ public class HttpClient {
                 throw new RuntimeException(e);
             }
         };
-
         webView.addJavascriptInterface(new CustomJavaScriptInterface(onHtmlFetchedListener), "HTMLOUT");
+        webView.setWebViewClient(new CustomWebClient());
         webView.loadUrl(url);
     }
 
