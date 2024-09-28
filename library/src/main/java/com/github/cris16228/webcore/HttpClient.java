@@ -173,6 +173,9 @@ public class HttpClient {
     }
 
     private boolean isPageFinished = false;
+    Handler pageHandler = new Handler(Looper.getMainLooper());
+    private Runnable pageLoadedTask;
+
     @SuppressLint("SetJavaScriptEnabled")
     private void connection() {
         if (context == null) {
@@ -192,10 +195,16 @@ public class HttpClient {
 
             @Override
             public void onPageFinished(WebView view, String url) {
-                if (!isPageFinished) {
-                    isPageFinished = true;
-                    view.loadUrl("javascript:window.HTMLOUT.processHTML(document.getElementsByTagName('html')[0].innerHTML);");
+                if (pageLoadedTask != null) {
+                    pageHandler.removeCallbacks(pageLoadedTask);
                 }
+                pageLoadedTask = () -> {
+                    if (!isPageFinished) {
+                        isPageFinished = true;
+                        view.loadUrl("javascript:window.HTMLOUT.processHTML(document.getElementsByTagName('html')[0].innerHTML);");
+                    }
+                };
+                pageHandler.postDelayed(pageLoadedTask, 1000);
             }
         });
         webView.loadUrl(url);
