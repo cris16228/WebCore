@@ -2,11 +2,15 @@ package com.github.cris16228.webcore;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.util.Patterns;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
+import androidx.annotation.NonNull;
 
 import com.github.cris16228.webcore.models.Document;
 import com.github.cris16228.webcore.utils.CustomJavaScriptInterface;
@@ -176,19 +180,8 @@ public class HttpClient {
         WebView webView = new WebView(context);
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setDomStorageEnabled(true);
-        OnHtmlFetchedListener onHtmlFetchedListener = html -> {
-            try {
-                document = new Document(html, new URL(webView.getUrl()));
-                System.out.println(onDocumentListener == null);
-                System.out.println(document.getUrl());
-                System.out.println(document.getStatusCode());
-                if (onDocumentListener != null) {
-                    onDocumentListener.onComplete(document);
-                }
-            } catch (MalformedURLException e) {
-                throw new RuntimeException(e);
-            }
-        };
+        OnHtmlFetchedListener onHtmlFetchedListener = getOnHtmlFetchedListener(webView);
+
         webView.addJavascriptInterface(new CustomJavaScriptInterface(onHtmlFetchedListener, webView), "HTMLOUT");
         webView.setWebViewClient(new WebViewClient() {
             @Override
@@ -202,6 +195,27 @@ public class HttpClient {
             }
         });
         webView.loadUrl(url);
+    }
+
+    private @NonNull OnHtmlFetchedListener getOnHtmlFetchedListener(WebView webView) {
+        Handler handler = new Handler(Looper.getMainLooper());
+
+        OnHtmlFetchedListener onHtmlFetchedListener = html -> {
+            handler.post(() -> {
+                try {
+                    document = new Document(html, new URL(webView.getUrl()));
+                    System.out.println(onDocumentListener == null);
+                    System.out.println(document.getUrl());
+                    System.out.println(document.getStatusCode());
+                    if (onDocumentListener != null) {
+                        onDocumentListener.onComplete(document);
+                    }
+                } catch (MalformedURLException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        };
+        return onHtmlFetchedListener;
     }
 
     private Document legacyConnection() {
