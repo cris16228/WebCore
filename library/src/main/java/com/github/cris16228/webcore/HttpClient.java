@@ -180,6 +180,9 @@ public class HttpClient {
             try {
                 System.out.println(html);
                 document = new Document(html, new URL(webView.getUrl()));
+                if (onDocumentListener != null) {
+                    onDocumentListener.onComplete(document);
+                }
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             }
