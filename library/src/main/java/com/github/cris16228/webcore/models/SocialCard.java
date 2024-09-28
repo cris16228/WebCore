@@ -61,14 +61,14 @@ public class SocialCard {
     public String getImageUrl(boolean checkFavicon) {
 
         //Tries to find the image url in the meta tag og:image
-        Pattern pattern = Pattern.compile(OG_IMAGE_TAG);
+        Pattern pattern = Pattern.compile(OG_IMAGE_TAG, Pattern.DOTALL);
         Matcher matcher = pattern.matcher(body);
         if (matcher.find()) {
             imageUrl = matcher.group(1);
         }
         //Tries to find the image url in the meta tag twitter:image if the first one fails
         if (TextUtils.isEmpty(imageUrl)) {
-            pattern = Pattern.compile(TWITTER_IMAGE_TAG);
+            pattern = Pattern.compile(TWITTER_IMAGE_TAG, Pattern.DOTALL);
             matcher = pattern.matcher(body);
             if (matcher.find()) {
                 imageUrl = matcher.group(1);
@@ -76,13 +76,15 @@ public class SocialCard {
         }
         //Tries to find the image url of the favicon if everything else fails
         if (TextUtils.isEmpty(imageUrl) && checkFavicon) {
-            pattern = Pattern.compile(FAVICON);
+            pattern = Pattern.compile(FAVICON, Pattern.DOTALL);
             matcher = pattern.matcher(body);
             if (matcher.find()) {
                 imageUrl = matcher.group(2);
                 if (!TextUtils.isEmpty(imageUrl)) {
                     if (!imageUrl.startsWith("http") || !imageUrl.startsWith("https")) {
                         imageUrl = _url.getProtocol() + "://" + _url.getHost() + imageUrl;
+                        imageUrl = imageUrl.trim();
+                        imageUrl = imageUrl.replaceAll("[\\$]", "");
                     }
                 }
             }
@@ -99,20 +101,20 @@ public class SocialCard {
      */
     public String getTitle() {
 
-        Pattern pattern = Pattern.compile(OG_TITLE_TAG);
+        Pattern pattern = Pattern.compile(OG_TITLE_TAG, Pattern.DOTALL);
         Matcher matcher = pattern.matcher(body);
         if (matcher.find()) {
             title = matcher.group(1);
         }
         if (TextUtils.isEmpty(title)) {
-            pattern = Pattern.compile(TWITTER_TITLE_TAG);
+            pattern = Pattern.compile(TWITTER_TITLE_TAG, Pattern.DOTALL);
             matcher = pattern.matcher(body);
             if (matcher.find()) {
                 title = matcher.group(1);
             }
         }
         if (TextUtils.isEmpty(title)) {
-            pattern = Pattern.compile(TITLE_TAG);
+            pattern = Pattern.compile(TITLE_TAG, Pattern.DOTALL);
             matcher = pattern.matcher(body);
             if (matcher.find()) {
                 title = matcher.group(1);
@@ -128,7 +130,7 @@ public class SocialCard {
      * @return {@site String} if found, empty otherwise
      */
     public String getSite() {
-        Pattern pattern = Pattern.compile(OG_SITE_NAME_TAG);
+        Pattern pattern = Pattern.compile(OG_SITE_NAME_TAG, Pattern.DOTALL);
         Matcher matcher = pattern.matcher(body);
         if (matcher.find()) {
             site = matcher.group(1);
@@ -143,7 +145,7 @@ public class SocialCard {
      * @return {@url String} if found, empty otherwise
      */
     public String getUrl() {
-        Pattern pattern = Pattern.compile(OG_URL_TAG);
+        Pattern pattern = Pattern.compile(OG_URL_TAG, Pattern.DOTALL);
         Matcher matcher = pattern.matcher(body);
         if (matcher.find()) {
             url = matcher.group(1);
@@ -158,13 +160,13 @@ public class SocialCard {
      * @return {@description String} if found, empty otherwise
      */
     public String getDescription() {
-        Pattern pattern = Pattern.compile(OG_DESCRIPTION_TAG);
+        Pattern pattern = Pattern.compile(OG_DESCRIPTION_TAG, Pattern.DOTALL);
         Matcher matcher = pattern.matcher(body);
         if (matcher.find()) {
             description = matcher.group(1);
         }
         if (TextUtils.isEmpty(description)) {
-            pattern = Pattern.compile(TWITTER_DESCRIPTION_TAG);
+            pattern = Pattern.compile(TWITTER_DESCRIPTION_TAG, Pattern.DOTALL);
             matcher = pattern.matcher(body);
             if (matcher.find()) {
                 description = matcher.group(1);

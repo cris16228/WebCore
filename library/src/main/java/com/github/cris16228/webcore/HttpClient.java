@@ -68,7 +68,7 @@ public class HttpClient {
     }
 
     private String checkUrl(String _url) {
-        Pattern pattern = Pattern.compile(urlRegex);
+        Pattern pattern = Pattern.compile(urlRegex, Pattern.DOTALL);
         Matcher matcher = pattern.matcher(_url);
         if (matcher.find()) {
             if (!_url.startsWith("http://") && !_url.startsWith("https://")) {
