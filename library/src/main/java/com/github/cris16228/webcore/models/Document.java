@@ -2,6 +2,7 @@ package com.github.cris16228.webcore.models;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -28,6 +29,10 @@ public class Document {
         this.body = body;
         this.url = url;
         this.history = history;
+    }
+
+    public Document(String body, URL url) {
+        this(-1, new HashMap<>(), body, url, new ArrayList<>());
     }
 
     public URL getUrl() {

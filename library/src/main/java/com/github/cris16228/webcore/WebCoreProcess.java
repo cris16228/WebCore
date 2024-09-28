@@ -7,7 +7,7 @@ import android.os.Looper;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class AsyncUtil {
+public class WebCoreProcess {
 
     ExecutorService executor = Executors.newSingleThreadExecutor();
     Handler handler = new Handler(Looper.getMainLooper());
@@ -15,16 +15,16 @@ public class AsyncUtil {
     private onExecuteListener onExecuteListener;
     private onUIUpdate onUIUpdate;
 
-    protected AsyncUtil(ExecutorService executor, Handler handler) {
+    protected WebCoreProcess(ExecutorService executor, Handler handler) {
         this.executor = executor;
         this.handler = handler;
     }
 
-    protected AsyncUtil() {
+    protected WebCoreProcess() {
     }
 
-    protected static AsyncUtil get() {
-        return new AsyncUtil();
+    protected static WebCoreProcess get() {
+        return new WebCoreProcess();
     }
 
     protected void updateUIBackground(Activity activity) {
