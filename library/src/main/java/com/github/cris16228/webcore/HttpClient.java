@@ -50,6 +50,8 @@ public class HttpClient {
     private String defaultUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) rv:130.0) Gecko/20100101 Firefox/130.0";
     private boolean legacy = false;
     private Context context;
+    private long timeout = 2000;
+
 
     private OnDocumentListener onDocumentListener;
 
@@ -81,6 +83,11 @@ public class HttpClient {
             return _url;
         }
         return null;
+    }
+
+    public HttpClient setTimeout(long timeout) {
+        this.timeout = timeout;
+        return this;
     }
 
     public HttpClient setLegacy(boolean legacy) {
@@ -204,7 +211,7 @@ public class HttpClient {
                         view.loadUrl("javascript:window.HTMLOUT.processHTML(document.getElementsByTagName('html')[0].innerHTML);");
                     }
                 };
-                pageHandler.postDelayed(pageLoadedTask, 1000);
+                pageHandler.postDelayed(pageLoadedTask, timeout);
             }
         });
         webView.loadUrl(url);
