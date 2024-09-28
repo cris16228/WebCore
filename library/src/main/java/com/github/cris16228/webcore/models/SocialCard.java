@@ -83,9 +83,9 @@ public class SocialCard {
                 if (!TextUtils.isEmpty(imageUrl)) {
                     if (!imageUrl.startsWith("http") || !imageUrl.startsWith("https")) {
                         imageUrl = _url.getProtocol() + "://" + _url.getHost() + imageUrl;
-                        imageUrl = imageUrl.trim();
-                        imageUrl = imageUrl.replaceAll("[\\$]", "");
                     }
+                    imageUrl = imageUrl.trim();
+                    imageUrl = imageUrl.replaceAll("[\\$]", "");
                 }
             }
         }
