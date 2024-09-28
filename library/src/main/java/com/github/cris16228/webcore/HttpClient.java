@@ -172,6 +172,7 @@ public class HttpClient {
 
     }
 
+    private boolean isPageFinished = false;
     @SuppressLint("SetJavaScriptEnabled")
     private void connection() {
         if (context == null) {
@@ -191,7 +192,10 @@ public class HttpClient {
 
             @Override
             public void onPageFinished(WebView view, String url) {
-                view.loadUrl("javascript:window.HTMLOUT.processHTML(document.getElementsByTagName('html')[0].innerHTML);");
+                if (!isPageFinished) {
+                    isPageFinished = true;
+                    view.loadUrl("javascript:window.HTMLOUT.processHTML(document.getElementsByTagName('html')[0].innerHTML);");
+                }
             }
         });
         webView.loadUrl(url);
@@ -200,13 +204,10 @@ public class HttpClient {
     private @NonNull OnHtmlFetchedListener getOnHtmlFetchedListener(WebView webView) {
         Handler handler = new Handler(Looper.getMainLooper());
 
-        OnHtmlFetchedListener onHtmlFetchedListener = html -> {
+        return html -> {
             handler.post(() -> {
                 try {
                     document = new Document(html, new URL(webView.getUrl()));
-                    System.out.println(onDocumentListener == null);
-                    System.out.println(document.getUrl());
-                    System.out.println(document.getStatusCode());
                     if (onDocumentListener != null) {
                         onDocumentListener.onComplete(document);
                     }
@@ -215,7 +216,6 @@ public class HttpClient {
                 }
             });
         };
-        return onHtmlFetchedListener;
     }
 
     private Document legacyConnection() {
