@@ -188,7 +188,7 @@ public class HttpClient {
                 throw new RuntimeException(e);
             }
         };
-        webView.addJavascriptInterface(new CustomJavaScriptInterface(onHtmlFetchedListener), "HTMLOUT");
+        webView.addJavascriptInterface(new CustomJavaScriptInterface(onHtmlFetchedListener, webView), "HTMLOUT");
         webView.setWebViewClient(new CustomWebClient());
         webView.loadUrl(url);
     }
