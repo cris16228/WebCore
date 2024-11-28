@@ -214,7 +214,11 @@ public class HttpClient {
                 pageHandler.postDelayed(pageLoadedTask, timeout);
             }
         });
-        webView.loadUrl(url);
+        if ("POST".equalsIgnoreCase(method)) {
+            webView.postUrl(url, setPostData(params).getBytes(StandardCharsets.UTF_8));
+        } else {
+            webView.loadUrl(url);
+    }
     }
 
     private @NonNull OnHtmlFetchedListener getOnHtmlFetchedListener(WebView webView) {
