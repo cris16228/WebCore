@@ -215,6 +215,7 @@ public class HttpClient {
                         if ("POST".equalsIgnoreCase(method)) {
                             view.evaluateJavascript("document.body.innerText", jsonResponse -> {
                                 try {
+                                    Log.i("HttpClient", "JSON: " + jsonResponse);
                                     if (isJson(jsonResponse)) {
                                         JSONObject jsonObject = new JSONObject(jsonResponse);
                                         document = new Document(jsonObject.toString(), new URL(url));
