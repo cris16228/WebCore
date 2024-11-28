@@ -261,11 +261,11 @@ public class HttpClient {
                                             "           return pre.innerText;" +
                                             "       } catch (e) {" +
                                             "           return null;" +
-                                            "       } else {" +
-                                            "           return document.body.innerText;" +
                                             "       }" +
+                                            "   } else {" +
+                                            "       return document.body.innerText;" +
                                             "   }" +
-                                            ")();", jsonResponse -> {
+                                            "})();", jsonResponse -> {
                                 try {
                                     if (isJson(jsonResponse)) {
                                         JSONObject jsonObject = new JSONObject(jsonResponse);
