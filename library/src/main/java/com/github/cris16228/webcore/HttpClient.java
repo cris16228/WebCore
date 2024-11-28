@@ -192,54 +192,66 @@ public class HttpClient {
         if (context == null) {
             throw new RuntimeException("Context is null. Please user new HttpClient(context) instead!");
         }
-        WebView webView = new WebView(context);
-        webView.getSettings().setJavaScriptEnabled(true);
-        webView.getSettings().setDomStorageEnabled(true);
-        OnHtmlFetchedListener onHtmlFetchedListener = getOnHtmlFetchedListener(webView);
+        if ("POST".equalsIgnoreCase(method)) {
+            new Thread(() -> {
+                try {
+                    HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+                    connection.setRequestMethod(method);
+                    connection.setRequestProperty("Content-Type", "application/json");
+                    connection.setDoOutput(true);
 
-        webView.addJavascriptInterface(new CustomJavaScriptInterface(onHtmlFetchedListener, webView), "HTMLOUT");
-        webView.setWebViewClient(new WebViewClient() {
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                return false;
-            }
+                    try (DataOutputStream out = new DataOutputStream(connection.getOutputStream())) {
+                        out.writeBytes(setPostData(params));
+                        out.flush();
+                    }
 
-            @Override
-            public void onPageFinished(WebView view, String url) {
-                if (pageLoadedTask != null) {
-                    pageHandler.removeCallbacks(pageLoadedTask);
-                }
-                pageLoadedTask = () -> {
-                    if (!isPageFinished) {
-                        isPageFinished = true;
-                        if ("POST".equalsIgnoreCase(method)) {
-                            view.evaluateJavascript("document.body.innerText", jsonResponse -> {
-                                try {
-                                    Log.i("HttpClient", "JSON: " + jsonResponse);
-                                    if (isJson(jsonResponse)) {
-                                        JSONObject jsonObject = new JSONObject(jsonResponse);
-                                        document = new Document(jsonObject.toString(), new URL(url));
-                                        if (onDocumentListener != null) {
-                                            onDocumentListener.onComplete(document);
-                                        }
-                                    } else {
-                                        view.loadUrl("javascript:window.HTMLOUT.processHTML(document.getElementsByTagName('html')[0].innerHTML);");
-                                    }
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-                            });
-                        } else {
-                            view.loadUrl("javascript:window.HTMLOUT.processHTML(document.getElementsByTagName('html')[0].innerHTML);");
+                    int responseCode = connection.getResponseCode();
+                    StringBuilder response = new StringBuilder();
+                    try (BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+                        String inputLine;
+                        while ((inputLine = in.readLine()) != null) {
+                            response.append(inputLine);
                         }
                     }
-                };
-                pageHandler.postDelayed(pageLoadedTask, timeout);
-            }
-        });
-        if ("POST".equalsIgnoreCase(method)) {
-            webView.postUrl(url, setPostData(params).getBytes(StandardCharsets.UTF_8));
+                    String jsonResponse = response.toString();
+                    if (isJson(jsonResponse)) {
+                        JSONObject jsonObject = new JSONObject(jsonResponse);
+                        document = new Document(jsonObject.toString(), new URL(url));
+                        if (onDocumentListener != null) {
+                            onDocumentListener.onComplete(document);
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }).start();
         } else {
+            WebView webView = new WebView(context);
+            webView.getSettings().setJavaScriptEnabled(true);
+            webView.getSettings().setDomStorageEnabled(true);
+            OnHtmlFetchedListener onHtmlFetchedListener = getOnHtmlFetchedListener(webView);
+
+            webView.addJavascriptInterface(new CustomJavaScriptInterface(onHtmlFetchedListener, webView), "HTMLOUT");
+            webView.setWebViewClient(new WebViewClient() {
+                @Override
+                public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                    return false;
+                }
+
+                @Override
+                public void onPageFinished(WebView view, String url) {
+                    if (pageLoadedTask != null) {
+                        pageHandler.removeCallbacks(pageLoadedTask);
+                    }
+                    pageLoadedTask = () -> {
+                        if (!isPageFinished) {
+                            isPageFinished = true;
+                            view.loadUrl("javascript:window.HTMLOUT.processHTML(document.getElementsByTagName('html')[0].innerHTML);");
+                        }
+                    };
+                    pageHandler.postDelayed(pageLoadedTask, timeout);
+                }
+            });
             webView.loadUrl(url);
         }
     }
