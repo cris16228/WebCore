@@ -253,7 +253,21 @@ public class HttpClient {
                     pageLoadedTask = () -> {
                         if (!isPageFinished) {
                             isPageFinished = true;
-                            view.loadUrl("javascript:window.HTMLOUT.processHTML(document.getElementsByTagName('html')[0].innerHTML);");
+                            view.evaluateJavascript("document.body.innerText", jsonResponse -> {
+                                try {
+                                    if (isJson(jsonResponse)) {
+                                        JSONObject jsonObject = new JSONObject(jsonResponse);
+                                        document = new Document(jsonObject.toString(), new URL(url));
+                                        if (onDocumentListener != null) {
+                                            onDocumentListener.onComplete(document);
+                                        }
+                                    } else {
+                                        view.loadUrl("javascript:window.HTMLOUT.processHTML(document.getElementsByTagName('html')[0].innerHTML);");
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            });
                         }
                     };
                     pageHandler.postDelayed(pageLoadedTask, timeout);
