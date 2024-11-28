@@ -380,7 +380,11 @@ public class HttpClient {
     private String setPostData(Map<String, String> params) {
         JSONObject result = new JSONObject();
         for (Map.Entry<String, String> param : params.entrySet()) {
-            result.put(URLEncoder.encode(param.getKey(), URLEncoder.encode(param.getValue())));
+            try {
+                result.put(param.getKey(), param.getValue());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
         return result.toString();
     }
