@@ -16,6 +16,10 @@ import com.github.cris16228.webcore.models.Document;
 import com.github.cris16228.webcore.utils.CustomJavaScriptInterface;
 import com.github.cris16228.webcore.utils.OnHtmlFetchedListener;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.InputStreamReader;
@@ -208,7 +212,25 @@ public class HttpClient {
                 pageLoadedTask = () -> {
                     if (!isPageFinished) {
                         isPageFinished = true;
-                        view.loadUrl("javascript:window.HTMLOUT.processHTML(document.getElementsByTagName('html')[0].innerHTML);");
+                        if ("POST".equalsIgnoreCase(method)) {
+                            view.evaluateJavascript("document.body.innerText", jsonResponse -> {
+                                try {
+                                    if (isJson(jsonResponse)) {
+                                        JSONObject jsonObject = new JSONObject(jsonResponse);
+                                        document = new Document(jsonObject.toString(), new URL(url));
+                                        if (onDocumentListener != null) {
+                                            onDocumentListener.onComplete(document);
+                                        }
+                                    } else {
+                                        view.loadUrl("javascript:window.HTMLOUT.processHTML(document.getElementsByTagName('html')[0].innerHTML);");
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            });
+                        } else {
+                            view.loadUrl("javascript:window.HTMLOUT.processHTML(document.getElementsByTagName('html')[0].innerHTML);");
+                        }
                     }
                 };
                 pageHandler.postDelayed(pageLoadedTask, timeout);
@@ -218,7 +240,21 @@ public class HttpClient {
             webView.postUrl(url, setPostData(params).getBytes(StandardCharsets.UTF_8));
         } else {
             webView.loadUrl(url);
+        }
     }
+
+    private boolean isJson(String json) {
+        try {
+            new JSONObject(json);
+            return true;
+        } catch (JSONException e) {
+            try {
+                new JSONArray(json);
+                return true;
+            } catch (JSONException exception) {
+                return false;
+            }
+        }
     }
 
     private @NonNull OnHtmlFetchedListener getOnHtmlFetchedListener(WebView webView) {
