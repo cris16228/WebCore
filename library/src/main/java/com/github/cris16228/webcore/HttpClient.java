@@ -253,7 +253,7 @@ public class HttpClient {
                     pageLoadedTask = () -> {
                         if (!isPageFinished) {
                             isPageFinished = true;
-                            view.evaluateJavascript("document.body.innerText", jsonResponse -> {
+                            view.evaluateJavascript("(function() { try { return JSON.stringify(JSON.parse(document.body.innerText)); } catch(e) { return null; } }());", jsonResponse -> {
                                 try {
                                     if (isJson(jsonResponse)) {
                                         JSONObject jsonObject = new JSONObject(jsonResponse);
