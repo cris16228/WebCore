@@ -253,7 +253,19 @@ public class HttpClient {
                     pageLoadedTask = () -> {
                         if (!isPageFinished) {
                             isPageFinished = true;
-                            view.evaluateJavascript("(function() { try { return JSON.stringify(JSON.parse(document.body.innerText)); } catch(e) { return null; } }());", jsonResponse -> {
+                            view.evaluateJavascript(
+                                    "(function() {" +
+                                            "   var pre = document.getElementsByTagName('pre')[0];" +
+                                            "   if (pre) {" +
+                                            "       try {" +
+                                            "           return pre.innerText;" +
+                                            "       } catch (e) {" +
+                                            "           return null;" +
+                                            "       } else {" +
+                                            "           return document.body.innerText;" +
+                                            "       }" +
+                                            "   }" +
+                                            ")();", jsonResponse -> {
                                 try {
                                     if (isJson(jsonResponse)) {
                                         JSONObject jsonObject = new JSONObject(jsonResponse);
