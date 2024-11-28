@@ -259,7 +259,7 @@ public class HttpClient {
                     pageHandler.postDelayed(pageLoadedTask, timeout);
                 }
             });
-            webView.loadUrl(url);
+            webView.loadUrl(url, params);
         }
     }
 
