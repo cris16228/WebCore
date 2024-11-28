@@ -378,17 +378,9 @@ public class HttpClient {
 
 
     private String setPostData(Map<String, String> params) {
-        StringBuilder result = new StringBuilder();
-        boolean first = true;
+        JSONObject result = new JSONObject();
         for (Map.Entry<String, String> param : params.entrySet()) {
-            if (first) {
-                first = false;
-            } else {
-                result.append("&");
-            }
-            result.append(URLEncoder.encode(param.getKey(), StandardCharsets.UTF_8));
-            result.append("=");
-            result.append(URLEncoder.encode(param.getValue(), StandardCharsets.UTF_8));
+            result.put(URLEncoder.encode(param.getKey(), URLEncoder.encode(param.getValue())));
         }
         return result.toString();
     }
