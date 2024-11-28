@@ -22,6 +22,7 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -206,8 +207,14 @@ public class HttpClient {
                     }
 
                     int responseCode = connection.getResponseCode();
+                    InputStream inputStream;
+                    if (responseCode >= 200 && responseCode < 300) {
+                        inputStream = connection.getInputStream();
+                    } else {
+                        inputStream = connection.getErrorStream();
+                    }
                     StringBuilder response = new StringBuilder();
-                    try (BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+                    try (BufferedReader in = new BufferedReader(new InputStreamReader(inputStream))) {
                         String inputLine;
                         while ((inputLine = in.readLine()) != null) {
                             response.append(inputLine);

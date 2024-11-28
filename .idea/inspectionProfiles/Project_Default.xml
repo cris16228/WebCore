@@ -1,7 +1,9 @@
 <component name="InspectionProjectProfileManager">
   <profile version="1.0">
     <option name="myName" value="Project Default" />
-    <inspection_tool class="AndroidLintUnsafeImplicitIntentLaunch" enabled="false" level="ERROR" enabled_by_default="false" />
+    <inspection_tool class="ExtractMethodRecommender" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="minLength" value="796" />
+    </inspection_tool>
     <inspection_tool class="JavadocDeclaration" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="ADDITIONAL_TAGS" value="url,description,site,title,imageUrl" />
     </inspection_tool>
