@@ -426,7 +426,7 @@ public class HttpClient {
             result.append(URLEncoder.encode(param.getKey(), StandardCharsets.UTF_8));
             result.append("=");
             result.append(URLEncoder.encode(param.getValue(), StandardCharsets.UTF_8));
-            result.append("=");
+            result.append("&");
         }
         result.deleteCharAt(result.length() - 1);
         return result.toString();
