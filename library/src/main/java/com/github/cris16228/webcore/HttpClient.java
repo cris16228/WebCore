@@ -422,18 +422,13 @@ public class HttpClient {
         }
         StringBuilder result = new StringBuilder(url);
         result.append(url.contains("?") ? "&" : "?");
-        boolean first = true;
         for (Map.Entry<String, String> param : params.entrySet()) {
-            if (first) {
-                first = false;
-            } else {
-                result.append("&");
-            }
             result.append(URLEncoder.encode(param.getKey(), StandardCharsets.UTF_8));
             result.append("=");
             result.append(URLEncoder.encode(param.getValue(), StandardCharsets.UTF_8));
+            result.append("=");
         }
-        result.setLength(result.length() - 1);
+        result.deleteCharAt(result.length() - 1);
         return result.toString();
     }
 
