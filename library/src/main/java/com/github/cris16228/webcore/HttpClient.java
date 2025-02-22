@@ -347,7 +347,9 @@ public class HttpClient {
 
                 if ("POST".equalsIgnoreCase(method)) {
                     connection.setDoOutput(true);
-                    connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                    if (!params.containsKey("Content-Type")) {
+                        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                    }
                     try {
                         DataOutputStream out = new DataOutputStream(connection.getOutputStream());
                         out.writeBytes(setPostData(params));
