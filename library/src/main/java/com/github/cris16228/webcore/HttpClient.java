@@ -348,7 +348,7 @@ public class HttpClient {
                 if ("POST".equalsIgnoreCase(method)) {
                     connection.setDoOutput(true);
                     if (!params.containsKey("Content-Type")) {
-                        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                        connection.setRequestProperty("Content-Type", "application/json");
                     }
                     try {
                         DataOutputStream out = new DataOutputStream(connection.getOutputStream());
