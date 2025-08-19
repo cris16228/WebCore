@@ -79,9 +79,6 @@ public class HttpClient {
             if (!_url.startsWith("http://") && !_url.startsWith("https://")) {
                 _url = "https://" + _url;
             }
-            if (!_url.endsWith("/")) {
-                _url += "/";
-            }
             if (!Patterns.WEB_URL.matcher(_url).matches()) {
                 return null;
             }
